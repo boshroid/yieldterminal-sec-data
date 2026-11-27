@@ -1,0 +1,2417 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "YieldTerminal Pro Earnings Data API",
+  "version": "2026-11-26",
+  "summary": "SEC-sourced quarterly results, outlook changes, dated chart levels, the AI capex board, the outlook scorecard and 13F holders by ticker, as JSON.",
+  "description": "The YieldTerminal Pro Earnings Data API returns, as JSON, the same figures the site shows on /results, /company (including its 13F holders section), /outlook, /levels, /ai-capex and /scorecard.\n\nEvery result figure (quarterly revenue, net income, diluted EPS) is read from the company's own results filing on SEC EDGAR (Form 8-K Item 2.02, or Form 6-K for foreign filers), and every result row carries source_url, the SEC.gov link to the filing it was read from, plus its SEC accession number. Outlook rows link both releases; capex quarters carry the 10-Q or 10-K accession number and folder link; scorecard rows link both SEC filings.\n\nWithholding rule: a figure is published only when the results release's financial table agrees with a second source (the release's own text, or the figures the company filed with the SEC for both this quarter and the year-ago quarter). Otherwise it is withheld: the *_text field is null or absent, and the matching number fields (*_value, *_year_ago, and for net income net_income_currency) are left out of the response. A missing figure never means zero; it means the figure could not be confirmed.\n\n10-Q check: *_matches_10q is true when the company's later Form 10-Q carries the same figure; false means not checked yet or no 10-Q exists, never that it differs, because a figure the 10-Q contradicts is withheld. *_year_ago_matches_sec is true when the year-ago figure equals what the company reported to the SEC a year earlier.\n\nCompany history (endpoint=company, quarterly_history) is SEC XBRL data as first reported, never converted between currencies; a fourth quarter derived as the full year less the first three quarters is marked d=1.\n\nTwo sources in endpoint=company: results[] holds the figures read from each results release (Form 8-K or 6-K), under the withholding rule above; quarterly_history holds SEC XBRL company facts from the 10-Q and 10-K filings, as first reported. A release figure can be withheld while the history shows a value for the same quarter: they are separate readings and are never merged. latest_filed is the filing date of the newest release in results; as_of is the filing date of the newest filing whose XBRL facts are in quarterly_history, so as_of is usually earlier.\n\nNo stock prices, charts, logos, analyst estimates or forecasts are returned. Educational data, not investment advice.\n\nAuthentication: send the key in the x-api-key header. The key query parameter still works but is deprecated (addresses end up in logs and browser history). Keys look like ytp_ followed by 48 hex characters. Get a free key or a paid plan at https://yieldterminalpro.com/developers.\n\nPlans and daily limits (per UTC day, reset 00:00 UTC; every call counts as one, whatever the endpoint):\n- Free key: 100 calls a day, personal non-commercial use with attribution. results, outlook and levels cover filing or board days in the last 30 days, except the free sandbox tickers AAPL, MSFT, NVDA, AMZN, GOOG, META, TSLA, JPM, WMT and KO, whose results and outlook rows keep their full history (responses served that way carry free_sandbox: true); company is available with no date limit; the whole capex board; the latest scorecard season only; 13f for the sandbox tickers only. updates and archive are Pro only.\n- Developer: US$29 a month or US$290 a year, 1,000 calls a day, every published filing day and scorecard season, 13f for every ticker, personal and internal use.\n- Pro: US$99 a month or US$990 a year, 20,000 calls a day, plus the updates endpoint (poll with since=<UTC time> for results first published, corrected or withdrawn after that time) and the archive endpoint. Commercial use included: show the data inside your own product or service, with attribution.\nResale, passing the raw dataset on to others, or using it to train a model is not included in any plan; write to yieldterminalpro@gmail.com for a separate licence.\n\nSuccessful data-api responses carry X-RateLimit-Limit and X-RateLimit-Remaining headers. Errors are JSON objects with an error message and, on newer endpoints, a machine-readable code.\n\nAttribution: attribute the data to YieldTerminal Pro (yieldterminalpro.com) when you show it. Full plain-text documentation for AI agents: https://yieldterminalpro.com/llms-full.txt",
+  "termsOfService": "https://yieldterminalpro.com/developers",
+  "contact": {
+   "name": "YieldTerminal Pro",
+   "email": "yieldterminalpro@gmail.com",
+   "url": "https://yieldterminalpro.com/developers"
+  }
+ },
+ "externalDocs": {
+  "description": "Developer page (plans, field tables, live sample, key test)",
+  "url": "https://yieldterminalpro.com/developers"
+ },
+ "servers": [
+  {
+   "url": "https://yieldterminalpro.com/api/apps/6a44fce3122251d9ebac82ed/functions",
+   "description": "Production"
+  }
+ ],
+ "tags": [
+  {
+   "name": "Data API",
+   "description": "Key required."
+  },
+  {
+   "name": "Public",
+   "description": "No key needed."
+  }
+ ],
+ "paths": {
+  "/data-api": {
+   "get": {
+    "operationId": "dataApiGet",
+    "summary": "Earnings Data API (key required)",
+    "description": "One function, selected by the endpoint parameter. Each call counts as one against the key's daily limit. Every result row carries source_url (the SEC filing) and accession; withheld figures are absent (see the Result schema).",
+    "tags": [
+     "Data API"
+    ],
+    "security": [
+     {
+      "apiKeyHeader": []
+     },
+     {
+      "apiKeyQuery": []
+     }
+    ],
+    "responses": {
+     "200": {
+      "$ref": "#/components/responses/DataOk"
+     },
+     "400": {
+      "$ref": "#/components/responses/BadRequest"
+     },
+     "401": {
+      "$ref": "#/components/responses/Unauthorized"
+     },
+     "402": {
+      "$ref": "#/components/responses/PaymentRequired"
+     },
+     "403": {
+      "$ref": "#/components/responses/Forbidden"
+     },
+     "404": {
+      "$ref": "#/components/responses/NotFound"
+     },
+     "429": {
+      "$ref": "#/components/responses/TooManyRequests"
+     },
+     "500": {
+      "$ref": "#/components/responses/ServerError"
+     }
+    },
+    "parameters": [
+     {
+      "name": "endpoint",
+      "in": "query",
+      "required": false,
+      "description": "Which data set. results (default): every published result filed on a day. company: one company's results and up to 20 quarters of SEC history (ticker required). outlook: outlook changes by date or ticker. levels: published dated chart levels by ticker or date. capex: the AI spenders capex board. scorecard: outlook scorecard rows for one season. 13f: which of the tracked managers reported a ticker's shares in their latest 13F filings vs the quarter before (ticker required; free key: sandbox tickers only). updates (Pro): results published, corrected or withdrawn since a time. archive (Pro): every published result, 1,000 per call.",
+      "schema": {
+       "type": "string",
+       "enum": [
+        "results",
+        "company",
+        "outlook",
+        "levels",
+        "capex",
+        "scorecard",
+        "13f",
+        "updates",
+        "archive"
+       ],
+       "default": "results"
+      }
+     },
+     {
+      "name": "date",
+      "in": "query",
+      "required": false,
+      "description": "results, outlook, levels: the filing day (or board day) YYYY-MM-DD. Default: the latest published day. On a free key, a results or outlook day more than 30 days back returns only the sandbox tickers' rows (AAPL, MSFT, NVDA, AMZN, GOOG, META, TSLA, JPM, WMT, KO) with free_sandbox: true, or 403 when none of them filed that day; an older levels day returns 403.",
+      "schema": {
+       "type": "string",
+       "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      }
+     },
+     {
+      "name": "ticker",
+      "in": "query",
+      "required": false,
+      "description": "company (required), 13f (required), outlook, levels, capex: a ticker symbol such as TJX or BRK.B (upper-cased by the server). For outlook and levels, ticker takes precedence over date. For capex, limits the board to that company (404 capex_ticker_not_covered if it is not on the board).",
+      "schema": {
+       "type": "string",
+       "pattern": "^[A-Za-z]{1,5}([.-][A-Za-z]{1,2})?$"
+      }
+     },
+     {
+      "name": "season",
+      "in": "query",
+      "required": false,
+      "description": "scorecard: the season, e.g. 2026-fall. Default: the latest season with published rows. Free key: the latest season only (403 free_season).",
+      "schema": {
+       "type": "string",
+       "pattern": "^\\d{4}-(spring|summer|fall|winter)$"
+      }
+     },
+     {
+      "name": "since",
+      "in": "query",
+      "required": false,
+      "description": "updates (Pro, required): an ISO time, e.g. 2026-11-20T00:00:00Z. Returns rows whose pushed_at is strictly later, oldest first, about 1,000 per call; continue with since=next_since while more is true.",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "after",
+      "in": "query",
+      "required": false,
+      "description": "archive (Pro): an SEC accession number. Returns the next 1,000 published results in accession-number order; continue with after=next_after while more is true.",
+      "schema": {
+       "type": "string",
+       "pattern": "^[0-9]{10}-[0-9]{2}-[0-9]{6}$"
+      }
+     },
+     {
+      "name": "key",
+      "in": "query",
+      "required": false,
+      "description": "Deprecated: the API key in the address. Use the x-api-key header instead; ?key= may be removed later.",
+      "schema": {
+       "type": "string",
+       "pattern": "^ytp_[0-9a-f]{48}$"
+      },
+      "deprecated": true
+     }
+    ]
+   },
+   "post": {
+    "operationId": "dataApiPost",
+    "summary": "Earnings Data API, parameters in a JSON body (key required)",
+    "description": "Same as GET; the parameters may be sent as a JSON object instead (body values take precedence over the query string). One function, selected by the endpoint parameter. Each call counts as one against the key's daily limit. Every result row carries source_url (the SEC filing) and accession; withheld figures are absent (see the Result schema).",
+    "tags": [
+     "Data API"
+    ],
+    "security": [
+     {
+      "apiKeyHeader": []
+     },
+     {
+      "apiKeyQuery": []
+     }
+    ],
+    "responses": {
+     "200": {
+      "$ref": "#/components/responses/DataOk"
+     },
+     "400": {
+      "$ref": "#/components/responses/BadRequest"
+     },
+     "401": {
+      "$ref": "#/components/responses/Unauthorized"
+     },
+     "402": {
+      "$ref": "#/components/responses/PaymentRequired"
+     },
+     "403": {
+      "$ref": "#/components/responses/Forbidden"
+     },
+     "404": {
+      "$ref": "#/components/responses/NotFound"
+     },
+     "429": {
+      "$ref": "#/components/responses/TooManyRequests"
+     },
+     "500": {
+      "$ref": "#/components/responses/ServerError"
+     }
+    },
+    "requestBody": {
+     "required": false,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "endpoint": {
+          "type": "string",
+          "enum": [
+           "results",
+           "company",
+           "outlook",
+           "levels",
+           "capex",
+           "scorecard",
+           "13f",
+           "updates",
+           "archive"
+          ],
+          "default": "results"
+         },
+         "date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+         },
+         "ticker": {
+          "type": "string",
+          "pattern": "^[A-Za-z]{1,5}([.-][A-Za-z]{1,2})?$"
+         },
+         "season": {
+          "type": "string",
+          "pattern": "^\\d{4}-(spring|summer|fall|winter)$"
+         },
+         "since": {
+          "type": "string",
+          "format": "date-time"
+         },
+         "after": {
+          "type": "string",
+          "pattern": "^[0-9]{10}-[0-9]{2}-[0-9]{6}$"
+         },
+         "key": {
+          "type": "string",
+          "pattern": "^ytp_[0-9a-f]{48}$",
+          "deprecated": true,
+          "description": "Deprecated; use the x-api-key header."
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/data-sample": {
+   "get": {
+    "operationId": "dataSample",
+    "tags": [
+     "Public"
+    ],
+    "security": [],
+    "summary": "Live sample response, no key",
+    "description": "A real response in the same format as data-api, with no key: endpoint=company for the sample tickers NVDA, WMT, TJX, HD and TGT only (ticker=, default NVDA); endpoint=results for the latest filing day, first 3 results; endpoint=outlook for the latest outlook filing day, first 3 rows. Cached for 5 minutes; CORS open.",
+    "parameters": [
+     {
+      "name": "endpoint",
+      "in": "query",
+      "required": false,
+      "description": "results or outlook. Omit for the company sample.",
+      "schema": {
+       "type": "string",
+       "enum": [
+        "results",
+        "outlook"
+       ]
+      }
+     },
+     {
+      "name": "ticker",
+      "in": "query",
+      "required": false,
+      "description": "Company sample ticker (when endpoint is omitted).",
+      "schema": {
+       "type": "string",
+       "enum": [
+        "NVDA",
+        "WMT",
+        "TJX",
+        "HD",
+        "TGT"
+       ],
+       "default": "NVDA"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Sample body.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SampleResponse"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Ticker not in the sample list (sample_ticker_not_covered).",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "No company page (no_company_page).",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Server error (sample_failed).",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/data-status": {
+   "get": {
+    "operationId": "dataStatus",
+    "tags": [
+     "Public"
+    ],
+    "security": [],
+    "summary": "Data freshness, no key",
+    "description": "The latest published filing day and when the newest result was pushed. Does not count against any key.",
+    "responses": {
+     "200": {
+      "description": "Freshness.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/StatusResponse"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "Status unavailable.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/StatusResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/data-free-key": {
+   "post": {
+    "operationId": "issueFreeKey",
+    "tags": [
+     "Public"
+    ],
+    "security": [],
+    "summary": "Issue a free API key",
+    "description": "Issues a free key (100 calls a day; personal, non-commercial use with attribution). The key is shown once. At most 3 active free keys per email and 5 new free keys per network per UTC day. Paid keys are issued after Stripe checkout on /developers.",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FreeKeyRequest"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "The new key.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FreeKeyResponse"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "invalid_email or consent_required.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      }
+     },
+     "405": {
+      "description": "Use POST (method_not_allowed).",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      }
+     },
+     "429": {
+      "description": "email_key_limit or network_daily_limit.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "issue_failed.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      }
+     },
+     "503": {
+      "description": "issue_unavailable.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "responses": {
+   "DataOk": {
+    "description": "The requested data. The body's endpoint field says which shape it is.",
+    "headers": {
+     "X-RateLimit-Limit": {
+      "description": "Calls allowed per UTC day for this key's plan (100 free, 1,000 Developer, 20,000 Pro).",
+      "schema": {
+       "type": "integer"
+      }
+     },
+     "X-RateLimit-Remaining": {
+      "description": "Calls left today after this one.",
+      "schema": {
+       "type": "integer"
+      }
+     }
+    },
+    "content": {
+     "application/json": {
+      "schema": {
+       "oneOf": [
+        {
+         "$ref": "#/components/schemas/ResultsResponse"
+        },
+        {
+         "$ref": "#/components/schemas/CompanyResponse"
+        },
+        {
+         "$ref": "#/components/schemas/OutlookResponse"
+        },
+        {
+         "$ref": "#/components/schemas/LevelsResponse"
+        },
+        {
+         "$ref": "#/components/schemas/CapexResponse"
+        },
+        {
+         "$ref": "#/components/schemas/ScorecardResponse"
+        },
+        {
+         "$ref": "#/components/schemas/F13Response"
+        },
+        {
+         "$ref": "#/components/schemas/UpdatesResponse"
+        },
+        {
+         "$ref": "#/components/schemas/ArchiveResponse"
+        }
+       ],
+       "discriminator": {
+        "propertyName": "endpoint",
+        "mapping": {
+         "results": "#/components/schemas/ResultsResponse",
+         "company": "#/components/schemas/CompanyResponse",
+         "outlook": "#/components/schemas/OutlookResponse",
+         "levels": "#/components/schemas/LevelsResponse",
+         "capex": "#/components/schemas/CapexResponse",
+         "scorecard": "#/components/schemas/ScorecardResponse",
+         "13f": "#/components/schemas/F13Response",
+         "updates": "#/components/schemas/UpdatesResponse",
+         "archive": "#/components/schemas/ArchiveResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "BadRequest": {
+    "description": "Bad parameter: date must be YYYY-MM-DD; ticker required (company) or malformed; bad_season; since must be an ISO time; after must be an accession number; or an unknown endpoint.",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      }
+     }
+    }
+   },
+   "Unauthorized": {
+    "description": "Missing or malformed API key, or an unknown or replaced key.",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      }
+     }
+    }
+   },
+   "PaymentRequired": {
+    "description": "The key's subscription is not active (e.g. past_due or canceled). Paid subscription status is re-read from Stripe every 6 hours.",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      }
+     }
+    }
+   },
+   "Forbidden": {
+    "description": "The key's plan does not cover the request: a free key asked for a day older than 30 days (for results and outlook: a day on which none of the sandbox tickers filed) or an older scorecard season (free_season), or endpoint=13f for a ticker outside the sandbox tickers (free_ticker), or a non-Pro key asked for updates or archive.",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      }
+     }
+    }
+   },
+   "NotFound": {
+    "description": "Not found: no company page for that ticker; capex board not published (capex_unavailable) or ticker not on it (capex_ticker_not_covered); season_not_found; no 13F holders row for that ticker (no_13f_row).",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      }
+     }
+    }
+   },
+   "TooManyRequests": {
+    "description": "Daily call limit reached (resets 00:00 UTC).",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      }
+     }
+    }
+   },
+   "ServerError": {
+    "description": "Server error.",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      }
+     }
+    }
+   }
+  },
+  "securitySchemes": {
+   "apiKeyHeader": {
+    "type": "apiKey",
+    "in": "header",
+    "name": "x-api-key",
+    "description": "Your key: ytp_ followed by 48 hex characters."
+   },
+   "apiKeyQuery": {
+    "type": "apiKey",
+    "in": "query",
+    "name": "key",
+    "description": "Deprecated. Same key in the address; prefer the header."
+   }
+  },
+  "schemas": {
+   "Result": {
+    "type": "object",
+    "properties": {
+     "accession": {
+      "type": "string",
+      "description": "SEC accession number of the results filing, e.g. 0000109198-26-000058."
+     },
+     "form": {
+      "type": "string",
+      "description": "8-K for a U.S. filer, 6-K for a foreign filer.",
+      "enum": [
+       "8-K",
+       "6-K"
+      ]
+     },
+     "ticker": {
+      "type": "string",
+      "description": "Ticker symbol."
+     },
+     "company": {
+      "type": "string",
+      "description": "Company name as registered with the SEC."
+     },
+     "cik": {
+      "type": "integer",
+      "description": "SEC CIK (company number)."
+     },
+     "filed": {
+      "type": "string",
+      "description": "Filing day (YYYY-MM-DD).",
+      "format": "date"
+     },
+     "accepted": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "SEC acceptance time as stored, e.g. \"2026-11-25 16:21:05\"."
+     },
+     "quarter_ended": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The quarter the release covers, as its table labels it, e.g. \"ended Sep 2026\" or \"labeled 2027 in the release\"."
+     },
+     "revenue_text": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Revenue as displayed on the site, with the year-ago comparison, e.g. \"$850.9 million (+22.1% vs $696.6 million a year earlier)\". null or absent = withheld."
+     },
+     "revenue_value": {
+      "type": "number",
+      "description": "Revenue as a plain number in whole units of revenue_currency. Absent when withheld."
+     },
+     "revenue_year_ago": {
+      "type": "number",
+      "description": "Year-ago revenue for the same quarter, from the same release. Absent when withheld."
+     },
+     "revenue_currency": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "ISO currency of revenue (not every row is USD)."
+     },
+     "revenue_label": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The release's own line name for the revenue figure."
+     },
+     "revenue_matches_10q": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "true when the company's 10-Q carries the same figure; false = not checked yet or no 10-Q, never a contradiction (a contradicted figure is withheld)."
+     },
+     "revenue_year_ago_matches_sec": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "true when the year-ago figure equals what the company reported to the SEC a year earlier."
+     },
+     "net_income_text": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Net income as displayed on the site. null or absent = withheld. The percentage change is omitted when either quarter is a loss."
+     },
+     "net_income_value": {
+      "type": "number",
+      "description": "Net income as a plain number in whole units of net_income_currency. Absent when withheld."
+     },
+     "net_income_year_ago": {
+      "type": "number",
+      "description": "Year-ago net income. Absent when withheld."
+     },
+     "net_income_currency": {
+      "type": "string",
+      "description": "ISO currency of net income. Absent when net income is withheld."
+     },
+     "net_income_label": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The release's own line name for the net income figure."
+     },
+     "net_income_matches_10q": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "As revenue_matches_10q, for net income."
+     },
+     "net_income_year_ago_matches_sec": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "As revenue_year_ago_matches_sec, for net income."
+     },
+     "eps_text": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Diluted EPS as displayed on the site. null or absent = withheld."
+     },
+     "eps_value": {
+      "type": "number",
+      "description": "Diluted EPS as a plain number (per share, in the release's currency). Absent when withheld."
+     },
+     "eps_year_ago": {
+      "type": "number",
+      "description": "Year-ago diluted EPS. Absent when withheld."
+     },
+     "eps_label": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The release's own line name for the EPS figure."
+     },
+     "eps_matches_10q": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "As revenue_matches_10q, for diluted EPS."
+     },
+     "source_url": {
+      "type": "string",
+      "description": "SEC.gov link to the results release the figures were read from.",
+      "format": "uri"
+     },
+     "published_at": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "When the result was first published on the site (UTC ISO). Set once."
+     },
+     "pushed_at": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "When the row was last created, corrected or withdrawn (UTC, YYYY-MM-DDTHH:MM:SSZ). Drives endpoint=updates."
+     }
+    },
+    "required": [
+     "accession",
+     "ticker",
+     "filed",
+     "source_url"
+    ],
+    "description": "One published result. Withholding rule: a figure is published only when the results release's financial table agrees with a second source (the release's own text, or the figures the company filed with the SEC for both this quarter and the year-ago quarter). Otherwise it is withheld: the *_text field is null or absent, and the matching number fields (*_value, *_year_ago, and for net income net_income_currency) are left out of the response. A missing figure never means zero; it means the figure could not be confirmed."
+   },
+   "CompanyResult": {
+    "type": "object",
+    "properties": {
+     "accession": {
+      "type": "string",
+      "description": "SEC accession number of the results filing."
+     },
+     "form": {
+      "type": "string",
+      "description": "8-K or 6-K."
+     },
+     "filed": {
+      "type": "string",
+      "description": "Filing day (YYYY-MM-DD).",
+      "format": "date"
+     },
+     "quarter_ended": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The quarter the release covers, as its table labels it."
+     },
+     "source_url": {
+      "type": "string",
+      "description": "SEC.gov link to the release.",
+      "format": "uri"
+     },
+     "revenue_text": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Revenue as displayed on the site. null or absent = withheld."
+     },
+     "revenue_label": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The release's own line name for revenue."
+     },
+     "revenue_proof": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Sentence(s) from the release that state the revenue figure (may be empty when the agreement came from SEC data instead)."
+     },
+     "revenue_matches_10q": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "true when the later 10-Q carries the same figure; false = not checked yet or no 10-Q."
+     },
+     "revenue_year_ago_matches_sec": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "true when the year-ago figure equals what the company reported to the SEC a year earlier."
+     },
+     "net_income_text": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Net income as displayed on the site. null or absent = withheld."
+     },
+     "net_income_label": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The release's own line name for net income."
+     },
+     "net_income_proof": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Sentence(s) from the release that state the net income figure (may be empty when the agreement came from SEC data instead)."
+     },
+     "net_income_matches_10q": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "true when the later 10-Q carries the same figure; false = not checked yet or no 10-Q."
+     },
+     "net_income_year_ago_matches_sec": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "true when the year-ago figure equals what the company reported to the SEC a year earlier."
+     },
+     "eps_text": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Diluted EPS as displayed on the site. null or absent = withheld."
+     },
+     "eps_label": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The release's own line name for diluted EPS."
+     },
+     "eps_proof": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Sentence(s) from the release that state the diluted EPS figure (may be empty when the agreement came from SEC data instead)."
+     },
+     "eps_matches_10q": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "true when the later 10-Q carries the same figure; false = not checked yet or no 10-Q."
+     }
+    },
+    "required": [
+     "accession",
+     "filed",
+     "source_url"
+    ],
+    "description": "One results release for the company, newest first, as shown on its company page (display text plus the release sentences that state each figure). Withholding rule: a figure is published only when the results release's financial table agrees with a second source (the release's own text, or the figures the company filed with the SEC for both this quarter and the year-ago quarter). Otherwise it is withheld: the *_text field is null or absent, and the matching number fields (*_value, *_year_ago, and for net income net_income_currency) are left out of the response. A missing figure never means zero; it means the figure could not be confirmed."
+   },
+   "HistoryValue": {
+    "type": "object",
+    "properties": {
+     "v": {
+      "type": "number",
+      "description": "The value as first reported to the SEC (XBRL)."
+     },
+     "u": {
+      "type": "string",
+      "description": "Unit, e.g. USD or USD/shares. Never converted between currencies."
+     },
+     "d": {
+      "type": "integer",
+      "description": "1 when this is a fourth quarter derived as the full year less the first three quarters.",
+      "enum": [
+       1
+      ]
+     },
+     "r": {
+      "type": "number",
+      "description": "A later restated value, when the company restated the figure."
+     }
+    },
+    "required": [
+     "v",
+     "u"
+    ]
+   },
+   "HistoryQuarter": {
+    "type": "object",
+    "properties": {
+     "period_end": {
+      "type": "string",
+      "description": "Last day of the fiscal quarter (YYYY-MM-DD).",
+      "format": "date"
+     },
+     "fiscal_year": {
+      "type": "integer",
+      "description": "Fiscal year as the company labels it."
+     },
+     "fiscal_period": {
+      "type": "string",
+      "description": "Q1, Q2, Q3 or Q4."
+     },
+     "revenue": {
+      "$ref": "#/components/schemas/HistoryValue"
+     },
+     "net_income": {
+      "$ref": "#/components/schemas/HistoryValue"
+     },
+     "eps": {
+      "$ref": "#/components/schemas/HistoryValue"
+     }
+    },
+    "required": [
+     "period_end"
+    ],
+    "description": "One quarter of SEC XBRL history, as first reported. A missing field was not reported or not shown (e.g. diluted EPS first reported before a share split)."
+   },
+   "OutlookRow": {
+    "type": "object",
+    "properties": {
+     "key": {
+      "type": "string",
+      "description": "Unique row key: newer release accession | metric key (family:basis:qualifier) | period, e.g. 0001327567-26-000030|revenue:gaap:|FY2027."
+     },
+     "ticker": {
+      "type": "string"
+     },
+     "company": {
+      "type": "string"
+     },
+     "cik": {
+      "type": "integer"
+     },
+     "filed": {
+      "type": "string",
+      "description": "Filing day of the newer release (YYYY-MM-DD).",
+      "format": "date"
+     },
+     "prev_filed": {
+      "type": "string",
+      "description": "Filing day of the previous release that gave the same figure.",
+      "format": "date"
+     },
+     "accession": {
+      "type": "string",
+      "description": "SEC accession number of the newer release."
+     },
+     "prev_accession": {
+      "type": "string",
+      "description": "SEC accession number of the previous release."
+     },
+     "source_url": {
+      "type": "string",
+      "description": "SEC.gov link to the newer release.",
+      "format": "uri"
+     },
+     "prev_source_url": {
+      "type": "string",
+      "description": "SEC.gov link to the previous release.",
+      "format": "uri"
+     },
+     "metric": {
+      "type": "string",
+      "description": "Metric as named, e.g. revenue, remaining performance obligations."
+     },
+     "family": {
+      "type": "string",
+      "description": "Metric family: revenue, ebitda, capex, tax_rate, operating_margin, comparable_sales, arr or rpo."
+     },
+     "period": {
+      "type": "string",
+      "description": "Period as worded, e.g. \"full-year fiscal 2027\"."
+     },
+     "period_code": {
+      "type": "string",
+      "description": "Period code, e.g. FY2027."
+     },
+     "basis": {
+      "type": "string",
+      "description": "\"adjusted\" when the company calls the figure adjusted or non-GAAP, otherwise \"GAAP\" (one row is \"GAAP and adjusted\")."
+     },
+     "unit": {
+      "type": "string",
+      "description": "money or pct.",
+      "enum": [
+       "money",
+       "pct"
+      ]
+     },
+     "ccy": {
+      "type": "string",
+      "description": "Currency for money figures; absent for percentages."
+     },
+     "old_low": {
+      "type": "number",
+      "description": "Low end in the previous release. Money in whole currency units (49000000000 = 49 billion); percentages in percent (10 = 10%). A single figure has low = high."
+     },
+     "old_high": {
+      "type": "number",
+      "description": "High end in the previous release. Absent for an open-ended outlook."
+     },
+     "new_low": {
+      "type": "number",
+      "description": "Low end in the newer release."
+     },
+     "new_high": {
+      "type": "number",
+      "description": "High end in the newer release."
+     },
+     "old_text": {
+      "type": "string",
+      "description": "The previous figure as displayed."
+     },
+     "new_text": {
+      "type": "string",
+      "description": "The newer figure as displayed."
+     },
+     "mechanical": {
+      "type": "string",
+      "description": "The comparison line shown on /outlook, e.g. \"low end up $100 million, high end up $100 million\"."
+     },
+     "direction_is_cost": {
+      "type": "boolean",
+      "description": "true for cost or tax figures."
+     },
+     "sentence": {
+      "type": "string",
+      "description": "The company's wording in the newer release (footnote marks left out; for a list item: lead-in, \" … \", item)."
+     },
+     "prev_sentence": {
+      "type": "string",
+      "description": "The company's wording in the previous release."
+     },
+     "note": {
+      "type": "string",
+      "description": "Checker's note shown under the row on /outlook; absent for most rows."
+     },
+     "pushed_at": {
+      "type": "string",
+      "description": "When the row was last pushed (UTC)."
+     }
+    },
+    "required": [
+     "key",
+     "ticker",
+     "filed",
+     "source_url",
+     "prev_source_url"
+    ],
+    "description": "An outlook figure next to the same figure in the company's previous release that gave it. Only figures whose metric, period and basis match in both releases are included, so a missing figure does not mean the company kept it unchanged. Empty fields are omitted."
+   },
+   "LevelNote": {
+    "type": "object",
+    "properties": {
+     "trade_date": {
+      "type": "string",
+      "description": "Board date (YYYY-MM-DD).",
+      "format": "date"
+     },
+     "session": {
+      "type": "string",
+      "description": "Session the notes were written in.",
+      "enum": [
+       "premarket",
+       "open",
+       "close"
+      ]
+     },
+     "ticker": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "levels": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "label": {
+         "type": "string",
+         "description": "Level label (times of day removed)."
+        },
+        "value": {
+         "type": "number"
+        },
+        "upper": {
+         "type": "number",
+         "description": "Upper bound for a zone."
+        }
+       }
+      },
+      "description": "Published chart levels. Paper-rule stops, entries, exits, fills and company financials are left out."
+     },
+     "outcome": {
+      "type": "object",
+      "properties": {
+       "computed_at": {
+        "type": "string"
+       },
+       "follow": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "sessions": {
+           "type": "integer",
+           "description": "1, 5 or 20 sessions after the board date."
+          },
+          "date": {
+           "type": "string"
+          },
+          "vs_published_pct": {
+           "type": "number",
+           "description": "Move to that close from the price the note was marked to."
+          },
+          "vs_close_pct": {
+           "type": "number",
+           "description": "Move from that session's completed close, when present."
+          }
+         }
+        }
+       },
+       "level_checks": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "label": {
+           "type": "string"
+          },
+          "value": {
+           "type": "number"
+          },
+          "side_at_publish": {
+           "type": "string"
+          },
+          "side_latest": {
+           "type": "string"
+          },
+          "crossed": {
+           "type": "boolean",
+           "description": "true when side_at_publish and side_latest differ; does not record crossings in between."
+          }
+         }
+        }
+       }
+      },
+      "description": "Tracked outcome, once computed."
+     },
+     "page_url": {
+      "type": "string",
+      "description": "The ticker page on the site.",
+      "format": "uri"
+     },
+     "board_url": {
+      "type": "string",
+      "description": "The dated board on the site.",
+      "format": "uri"
+     }
+    },
+    "required": [
+     "trade_date",
+     "ticker"
+    ],
+    "description": "A published dated chart-level note. Educational chart references, not price forecasts or trade signals; no closes, prices or chart images are returned."
+   },
+   "CapexQuarter": {
+    "type": "object",
+    "properties": {
+     "quarter_end": {
+      "type": "string",
+      "description": "Last day of the company's fiscal quarter.",
+      "format": "date"
+     },
+     "capex": {
+      "type": [
+       "number",
+       "null"
+      ],
+      "description": "Capital expenditures, USD billions (3 decimals)."
+     },
+     "ocf": {
+      "type": [
+       "number",
+       "null"
+      ],
+      "description": "Net cash from operating activities, USD billions."
+     },
+     "fcf": {
+      "type": [
+       "number",
+       "null"
+      ],
+      "description": "ocf minus capex, USD billions."
+     },
+     "capex_pct_ocf": {
+      "type": [
+       "number",
+       "null"
+      ],
+      "description": "capex as % of ocf (1 decimal); null when ocf is zero or negative."
+     },
+     "buybacks": {
+      "type": [
+       "number",
+       "null"
+      ],
+      "description": "Cash paid for buybacks in the quarter, USD billions (when the board carries it; 0 when no such line)."
+     },
+     "dividends": {
+      "type": [
+       "number",
+       "null"
+      ],
+      "description": "Cash dividends paid in the quarter, USD billions (when present)."
+     },
+     "total": {
+      "type": [
+       "number",
+       "null"
+      ],
+      "description": "capex + buybacks + dividends (when present)."
+     },
+     "total_pct_ocf": {
+      "type": [
+       "number",
+       "null"
+      ],
+      "description": "total as % of ocf; null when ocf is zero or negative (when present)."
+     },
+     "footnote": {
+      "type": "boolean",
+      "description": "true when the quarter has a footnote (see footnote_note)."
+     },
+     "accession": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Accession number of the 10-Q or 10-K the capex figure was read from."
+     },
+     "filing_url": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "That filing's folder on SEC.gov."
+     }
+    },
+    "required": [
+     "quarter_end",
+     "accession"
+    ]
+   },
+   "CapexCompany": {
+    "type": "object",
+    "properties": {
+     "ticker": {
+      "type": "string"
+     },
+     "company": {
+      "type": "string"
+     },
+     "cik": {
+      "type": [
+       "integer",
+       "null"
+      ]
+     },
+     "capex_line": {
+      "type": "string",
+      "description": "The company's own cash-flow line used as capex."
+     },
+     "buybacks_line": {
+      "type": "string",
+      "description": "The company's own buyback line (present when the board carries buybacks)."
+     },
+     "dividends_line": {
+      "type": "string",
+      "description": "The company's own dividends line (present when the board carries dividends)."
+     },
+     "fiscal_year_note": {
+      "type": "string",
+      "description": "Fiscal year end when not December 31; empty otherwise."
+     },
+     "own_fcf_note": {
+      "type": "string",
+      "description": "How the company's own free cash flow definition compares."
+     },
+     "notes": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "How the company's figures are read (when present)."
+     },
+     "footnote_note": {
+      "type": "string",
+      "description": "The note a quarter marked footnote: true refers to."
+     },
+     "quarters": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/CapexQuarter"
+      }
+     }
+    },
+    "required": [
+     "ticker",
+     "quarters"
+    ]
+   },
+   "ScoreRow": {
+    "type": "object",
+    "properties": {
+     "key": {
+      "type": "string",
+      "description": "<results accession>|<field>."
+     },
+     "season": {
+      "type": "string",
+      "description": "Season key, e.g. 2026-fall."
+     },
+     "ticker": {
+      "type": "string"
+     },
+     "company": {
+      "type": "string"
+     },
+     "cik": {
+      "type": "integer"
+     },
+     "field": {
+      "type": "string",
+      "description": "revenue (total revenue, USD) or eps_diluted (GAAP diluted EPS, USD per share).",
+      "enum": [
+       "revenue",
+       "eps_diluted"
+      ]
+     },
+     "class": {
+      "type": "string",
+      "description": "Where the figure landed against the company's own outlook.",
+      "enum": [
+       "ABOVE",
+       "ABOVE_CAP",
+       "AT_OR_ABOVE_FLOOR",
+       "INSIDE",
+       "MATCHED",
+       "AT_OR_BELOW_CAP",
+       "BELOW",
+       "BELOW_FLOOR"
+      ]
+     },
+     "group": {
+      "type": "string",
+      "description": "above, inside or below.",
+      "enum": [
+       "above",
+       "inside",
+       "below"
+      ]
+     },
+     "actual": {
+      "type": "number",
+      "description": "The reported figure."
+     },
+     "actual_text": {
+      "type": "string",
+      "description": "The reported figure as shown on the results pages."
+     },
+     "low": {
+      "type": "number",
+      "description": "Outlook low (absent when open-ended)."
+     },
+     "high": {
+      "type": "number",
+      "description": "Outlook high (absent when open-ended)."
+     },
+     "outlook_value_text": {
+      "type": "string",
+      "description": "The outlook as the company wrote it."
+     },
+     "vs_mid_pct": {
+      "type": "number",
+      "description": "Reported figure vs the outlook midpoint, percent (6 decimals); absent when open-ended."
+     },
+     "within_outlook_precision": {
+      "type": "boolean",
+      "description": "true when outside the range by less than half the rounding step of the company's outlook text."
+     },
+     "guided_quarter": {
+      "type": "string",
+      "description": "e.g. Q3 FY2026."
+     },
+     "quarter_ended": {
+      "type": "string"
+     },
+     "outlook_filed": {
+      "type": "string",
+      "format": "date"
+     },
+     "outlook_url": {
+      "type": "string",
+      "description": "SEC.gov link to the release that gave the outlook.",
+      "format": "uri"
+     },
+     "outlook_sentence": {
+      "type": "string",
+      "description": "The outlook sentence as the company wrote it."
+     },
+     "results_filed": {
+      "type": "string",
+      "format": "date"
+     },
+     "results_url": {
+      "type": "string",
+      "description": "SEC.gov link to the results release.",
+      "format": "uri"
+     },
+     "updated_at": {
+      "type": "string",
+      "description": "When the row last changed (UTC)."
+     }
+    },
+    "required": [
+     "key",
+     "ticker",
+     "field",
+     "class",
+     "outlook_url",
+     "results_url"
+    ],
+    "description": "A reported quarterly figure compared with the outlook the same company gave for that exact quarter in its previous results release. Never analyst estimates."
+   },
+   "Withdrawn": {
+    "type": "object",
+    "properties": {
+     "accession": {
+      "type": "string"
+     },
+     "ticker": {
+      "type": "string"
+     },
+     "company": {
+      "type": "string"
+     },
+     "filed": {
+      "type": "string",
+      "format": "date"
+     },
+     "pushed_at": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string",
+      "description": "withdrawn: taken off the site after review; drop it from your copy.",
+      "enum": [
+       "withdrawn"
+      ]
+     }
+    },
+    "required": [
+     "accession",
+     "status"
+    ]
+   },
+   "ResultsResponse": {
+    "type": "object",
+    "properties": {
+     "endpoint": {
+      "type": "string",
+      "enum": [
+       "results"
+      ]
+     },
+     "date": {
+      "type": "string",
+      "description": "The filing day returned."
+     },
+     "count": {
+      "type": "integer"
+     },
+     "free_sandbox": {
+      "type": "boolean",
+      "const": true,
+      "description": "Present (true) only when a free key got rows through the free sandbox: an older filing day (results, outlook by date) returns only the sandbox tickers' rows (AAPL, MSFT, NVDA, AMZN, GOOG, META, TSLA, JPM, WMT, KO; note GOOG, not GOOGL), or outlook by ticker for a sandbox ticker returns its full history. The note says how many other rows were left out. Never present for paid keys."
+     },
+     "results": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/Result"
+      }
+     },
+     "note": {
+      "type": "string",
+      "description": "Figures as read by YieldTerminal Pro from each SEC results filing; a missing figure was withheld because it could not be confirmed. Educational data, not investment advice. Attribute to YieldTerminal Pro (yieldterminalpro.com)."
+     }
+    },
+    "required": [
+     "endpoint",
+     "date",
+     "count",
+     "results",
+     "note"
+    ]
+   },
+   "CompanyResponse": {
+    "type": "object",
+    "properties": {
+     "endpoint": {
+      "type": "string",
+      "enum": [
+       "company"
+      ]
+     },
+     "ticker": {
+      "type": "string"
+     },
+     "company": {
+      "type": "string"
+     },
+     "cik": {
+      "type": "integer"
+     },
+     "as_of": {
+      "type": "string",
+      "description": "Filing date (YYYY-MM-DD) of the newest SEC filing whose XBRL facts are used in quarterly_history, counting restatements: usually the company's latest 10-Q or 10-K. quarterly_history runs only through the quarters that filing and earlier ones report."
+     },
+     "latest_filed": {
+      "type": "string",
+      "description": "Filing date (YYYY-MM-DD) of the newest results release (Form 8-K or 6-K) in results. A results release usually comes weeks before the 10-Q or 10-K for the same quarter, so latest_filed is often later than as_of, and the newest quarter in results may not be in quarterly_history yet."
+     },
+     "results": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/CompanyResult"
+      },
+      "description": "Results releases, newest first."
+     },
+     "quarterly_history": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/HistoryQuarter"
+      },
+      "description": "Up to 20 quarters of SEC XBRL company facts (from the company's 10-Q and 10-K filings), oldest to newest, as first reported. This is a different source from results: a figure can be withheld in results (the release's own number could not be confirmed) while quarterly_history shows a value for the same quarter from the XBRL facts. The two are never merged, and a history value does not un-withhold the release figure. Line definitions can differ (history_note names the XBRL concept, e.g. NetIncomeLoss; results[].*_label names the release's own line), and a fourth quarter in the history is often derived as the full year less the first three quarters (d = 1)."
+     },
+     "history_note": {
+      "type": "string",
+      "description": "Which XBRL concepts were used and what is not shown."
+     },
+     "note": {
+      "type": "string"
+     },
+     "history_ext": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/ExtQuarter"
+      },
+      "description": "Up to 20 quarters of extra SEC XBRL fields as first reported (point in time: each value carries the accession and filing date of the filing that first reported it, so nothing uses information filed later). Developer and Pro: every company. Free key: only AAPL, MSFT, NVDA, AMZN, GOOG, META, TSLA, JPM, WMT, KO (otherwise an empty array and history_ext_note explains). Banks and insurers usually lack gross profit, operating income and capex."
+     },
+     "history_ext_note": {
+      "type": "string",
+      "description": "How to read history_ext, or why it is empty for this key/company."
+     }
+    },
+    "required": [
+     "endpoint",
+     "ticker",
+     "results",
+     "quarterly_history",
+     "note"
+    ]
+   },
+   "OutlookResponse": {
+    "type": "object",
+    "properties": {
+     "endpoint": {
+      "type": "string",
+      "enum": [
+       "outlook"
+      ]
+     },
+     "date": {
+      "type": "string",
+      "description": "Present when queried by date."
+     },
+     "ticker": {
+      "type": "string",
+      "description": "Present when queried by ticker."
+     },
+     "count": {
+      "type": "integer"
+     },
+     "free_sandbox": {
+      "type": "boolean",
+      "const": true,
+      "description": "Present (true) only when a free key got rows through the free sandbox: an older filing day (results, outlook by date) returns only the sandbox tickers' rows (AAPL, MSFT, NVDA, AMZN, GOOG, META, TSLA, JPM, WMT, KO; note GOOG, not GOOGL), or outlook by ticker for a sandbox ticker returns its full history. The note says how many other rows were left out. Never present for paid keys."
+     },
+     "outlook": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/OutlookRow"
+      }
+     },
+     "note": {
+      "type": "string",
+      "description": "Usage note; with a free key and ticker=, says how many older rows were left out."
+     }
+    },
+    "required": [
+     "endpoint",
+     "count",
+     "outlook",
+     "note"
+    ]
+   },
+   "LevelsResponse": {
+    "type": "object",
+    "properties": {
+     "endpoint": {
+      "type": "string",
+      "enum": [
+       "levels"
+      ]
+     },
+     "date": {
+      "type": "string"
+     },
+     "ticker": {
+      "type": "string"
+     },
+     "count": {
+      "type": "integer"
+     },
+     "levels": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/LevelNote"
+      }
+     },
+     "note": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "endpoint",
+     "count",
+     "levels",
+     "note"
+    ]
+   },
+   "CapexResponse": {
+    "type": "object",
+    "properties": {
+     "endpoint": {
+      "type": "string",
+      "enum": [
+       "capex"
+      ]
+     },
+     "board": {
+      "type": "string",
+      "enum": [
+       "ai-spenders"
+      ]
+     },
+     "title": {
+      "type": "string"
+     },
+     "unit": {
+      "type": "string",
+      "description": "USD billions."
+     },
+     "as_of": {
+      "type": "string",
+      "description": "Last quarter end on the board."
+     },
+     "updated_at": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "count": {
+      "type": "integer"
+     },
+     "companies": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/CapexCompany"
+      }
+     },
+     "source": {
+      "type": "string"
+     },
+     "method": {
+      "type": "string"
+     },
+     "returns_method": {
+      "type": "string"
+     },
+     "page_url": {
+      "type": "string",
+      "format": "uri"
+     },
+     "note": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "endpoint",
+     "board",
+     "count",
+     "companies",
+     "note"
+    ]
+   },
+   "ScorecardResponse": {
+    "type": "object",
+    "properties": {
+     "endpoint": {
+      "type": "string",
+      "enum": [
+       "scorecard"
+      ]
+     },
+     "season": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "latest_season": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "seasons": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Published seasons, newest first."
+     },
+     "count": {
+      "type": "integer"
+     },
+     "more": {
+      "type": "boolean",
+      "description": "true only if the season reached 1,000 rows."
+     },
+     "counts": {
+      "type": "object",
+      "properties": {
+       "above": {
+        "type": "integer"
+       },
+       "inside": {
+        "type": "integer"
+       },
+       "below": {
+        "type": "integer"
+       },
+       "figures": {
+        "type": "integer"
+       },
+       "revenue": {
+        "type": "integer"
+       },
+       "eps_diluted": {
+        "type": "integer"
+       }
+      }
+     },
+     "rows": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/ScoreRow"
+      }
+     },
+     "page_url": {
+      "type": "string",
+      "format": "uri"
+     },
+     "note": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "endpoint",
+     "season",
+     "count",
+     "rows",
+     "note"
+    ]
+   },
+   "F13Holder": {
+    "type": "object",
+    "description": "One tracked manager's reported line for the ticker's security (shares, depositary receipts or partnership units; options excluded). Field names as stored.",
+    "properties": {
+     "k": {
+      "type": "string",
+      "description": "Manager key, e.g. berkshire."
+     },
+     "n": {
+      "type": "string",
+      "description": "The 13F filer's name as shown on the site."
+     },
+     "s": {
+      "type": "string",
+      "description": "Manager page slug: https://yieldterminalpro.com/articles/<s>."
+     },
+     "sh": {
+      "type": "integer",
+      "description": "Shares reported at period."
+     },
+     "v": {
+      "type": "number",
+      "description": "Value in U.S. dollars as reported in the filing."
+     },
+     "p": {
+      "type": "number",
+      "description": "The position's reported value as a percentage of the total value in that filing, options included (3 decimals)."
+     },
+     "sh0": {
+      "type": [
+       "integer",
+       "null"
+      ],
+      "description": "Shares reported at prior_period; null when none were reported then."
+     },
+     "st": {
+      "type": "string",
+      "enum": [
+       "new",
+       "up",
+       "down",
+       "same",
+       "nc"
+      ],
+      "description": "Reported share count at period vs prior_period: a change in reported shares, not a record of trades. nc = not compared: a heuristic flagged a possible stock split or identifier change (it can miss a split or flag one wrongly)."
+     }
+    },
+    "required": [
+     "k",
+     "n",
+     "s",
+     "sh",
+     "st"
+    ]
+   },
+   "F13Gone": {
+    "type": "object",
+    "description": "A tracked manager that reported shares at prior_period but not at period.",
+    "properties": {
+     "k": {
+      "type": "string"
+     },
+     "n": {
+      "type": "string"
+     },
+     "s": {
+      "type": "string"
+     },
+     "sh0": {
+      "type": "integer",
+      "description": "Shares reported at prior_period."
+     }
+    },
+    "required": [
+     "k",
+     "n",
+     "s",
+     "sh0"
+    ]
+   },
+   "F13Response": {
+    "type": "object",
+    "properties": {
+     "endpoint": {
+      "type": "string",
+      "enum": [
+       "13f"
+      ]
+     },
+     "ticker": {
+      "type": "string"
+     },
+     "period": {
+      "type": "string",
+      "description": "Quarter end of the latest 13F filings (YYYY-MM-DD)."
+     },
+     "prior_period": {
+      "type": "string",
+      "description": "The quarter end compared with (YYYY-MM-DD)."
+     },
+     "holder_count": {
+      "type": "integer",
+      "description": "Number of holders rows."
+     },
+     "gone_count": {
+      "type": "integer",
+      "description": "Number of gone rows."
+     },
+     "free_sandbox": {
+      "type": "boolean",
+      "description": "Present (true) when a free key read a sandbox ticker."
+     },
+     "holders": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/F13Holder"
+      },
+      "description": "Largest reported value first."
+     },
+     "gone": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/F13Gone"
+      }
+     },
+     "updated_at": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "page_url": {
+      "type": "string",
+      "format": "uri"
+     },
+     "note": {
+      "type": "string",
+      "description": "Caveats: the 19 tracked managers only; quarter-end snapshot filed about six weeks later; long positions only, no shorts or cash; options excluded; share changes, not trades; nc is a heuristic. Educational data, not investment advice."
+     }
+    },
+    "required": [
+     "endpoint",
+     "ticker",
+     "period",
+     "prior_period",
+     "holder_count",
+     "gone_count",
+     "holders",
+     "gone",
+     "note"
+    ]
+   },
+   "UpdatesResponse": {
+    "type": "object",
+    "properties": {
+     "endpoint": {
+      "type": "string",
+      "enum": [
+       "updates"
+      ]
+     },
+     "since": {
+      "type": "string"
+     },
+     "count": {
+      "type": "integer"
+     },
+     "more": {
+      "type": "boolean",
+      "description": "true when the page was full: call again with since=next_since."
+     },
+     "next_since": {
+      "type": "string",
+      "description": "The pushed_at of the last row; pass it as since for the next call."
+     },
+     "results": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "allOf": [
+          {
+           "$ref": "#/components/schemas/Result"
+          },
+          {
+           "type": "object",
+           "properties": {
+            "status": {
+             "type": "string",
+             "enum": [
+              "published"
+             ]
+            }
+           },
+           "required": [
+            "status"
+           ]
+          }
+         ]
+        },
+        {
+         "$ref": "#/components/schemas/Withdrawn"
+        }
+       ]
+      }
+     },
+     "note": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "endpoint",
+     "since",
+     "count",
+     "more",
+     "next_since",
+     "results"
+    ]
+   },
+   "ArchiveResponse": {
+    "type": "object",
+    "properties": {
+     "endpoint": {
+      "type": "string",
+      "enum": [
+       "archive"
+      ]
+     },
+     "after": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "count": {
+      "type": "integer"
+     },
+     "more": {
+      "type": "boolean",
+      "description": "true when 1,000 rows came back: call again with after=next_after."
+     },
+     "next_after": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "results": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/Result"
+      }
+     },
+     "note": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "endpoint",
+     "count",
+     "more",
+     "results"
+    ]
+   },
+   "SampleResponse": {
+    "allOf": [
+     {
+      "type": "object",
+      "properties": {
+       "sample": {
+        "type": "boolean",
+        "const": true
+       },
+       "sample_note": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "sample",
+       "sample_note"
+      ]
+     },
+     {
+      "oneOf": [
+       {
+        "$ref": "#/components/schemas/CompanyResponse"
+       },
+       {
+        "$ref": "#/components/schemas/ResultsResponse"
+       },
+       {
+        "$ref": "#/components/schemas/OutlookResponse"
+       }
+      ]
+     }
+    ],
+    "description": "The same body as data-api for that endpoint, plus sample and sample_note. results and outlook are trimmed to the first 3 rows (count is the trimmed count)."
+   },
+   "StatusResponse": {
+    "type": "object",
+    "properties": {
+     "latest_filing_day": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "date"
+     },
+     "latest_update_utc": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "When the newest result row was pushed (UTC)."
+     },
+     "hours_since_update": {
+      "type": [
+       "number",
+       "null"
+      ]
+     },
+     "ok": {
+      "type": "boolean",
+      "description": "A freshness hint, not a guarantee."
+     },
+     "error": {
+      "type": "string"
+     },
+     "code": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "ok"
+    ]
+   },
+   "FreeKeyRequest": {
+    "type": "object",
+    "properties": {
+     "email": {
+      "type": "string",
+      "description": "Your email address (kept only to tell you about changes to the key or the API).",
+      "format": "email"
+     },
+     "agree": {
+      "type": "boolean",
+      "const": true,
+      "description": "Confirms the free key is for personal, non-commercial use with attribution."
+     }
+    },
+    "required": [
+     "email",
+     "agree"
+    ]
+   },
+   "FreeKeyResponse": {
+    "type": "object",
+    "properties": {
+     "key": {
+      "type": "string",
+      "description": "The API key, shown once (only a fingerprint is stored)."
+     },
+     "plan": {
+      "type": "string",
+      "enum": [
+       "free"
+      ]
+     },
+     "daily_limit": {
+      "type": "integer"
+     },
+     "free_days": {
+      "type": "integer",
+      "description": "Days of filing history results, outlook and levels cover on the free key."
+     }
+    },
+    "required": [
+     "key",
+     "plan",
+     "daily_limit",
+     "free_days"
+    ]
+   },
+   "Error": {
+    "type": "object",
+    "properties": {
+     "error": {
+      "type": "string",
+      "description": "Human-readable message."
+     },
+     "code": {
+      "type": "string",
+      "description": "Machine-readable code where the endpoint sets one: bad_ticker, capex_ticker_not_covered, capex_unavailable, bad_season, season_not_found, free_season, free_ticker, no_13f_row (data-api); sample_ticker_not_covered, no_company_page, sample_failed (data-sample); invalid_email, consent_required, email_key_limit, network_daily_limit, issue_unavailable, issue_failed, method_not_allowed (data-free-key)."
+     },
+     "seasons": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Published scorecard seasons (season_not_found, free_season)."
+     },
+     "limit": {
+      "type": "integer",
+      "description": "Active free keys allowed per email (email_key_limit)."
+     }
+    },
+    "required": [
+     "error"
+    ]
+   },
+   "ExtValue": {
+    "type": [
+     "object",
+     "null"
+    ],
+    "description": "One SEC XBRL value as first reported (null when not tagged, not on the same basis, or failed a sanity check).",
+    "properties": {
+     "value": {
+      "type": "number"
+     },
+     "unit": {
+      "type": "string",
+      "description": "USD, or shares for diluted_shares; nothing is converted."
+     },
+     "concept": {
+      "type": "string",
+      "description": "The XBRL concept used (one per field per company), or 'derived: ...'."
+     },
+     "period_start": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "date"
+     },
+     "period_end": {
+      "type": "string",
+      "format": "date"
+     },
+     "instant": {
+      "type": "boolean",
+      "description": "true for balance-sheet values (cash, total_assets, total_liabilities, long_term_debt, stockholders_equity), measured at period_end."
+     },
+     "accession": {
+      "type": "string",
+      "description": "Accession number of the filing that first reported the value (for derived cash-flow quarters, the later year-to-date filing)."
+     },
+     "form": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "filed": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "date"
+     },
+     "derived": {
+      "type": "boolean",
+      "description": "Computed from filed figures: a cash-flow quarter as the difference of two year-to-date figures, a fiscal Q4 income figure as the year minus three quarters, free_cash_flow = operating_cash_flow - capex."
+     },
+     "restated": {
+      "type": "boolean"
+     },
+     "restated_value": {
+      "type": "number"
+     },
+     "restated_accession": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "restated_filed": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "pre_split_ratio": {
+      "type": "number"
+     },
+     "restated_for_split": {
+      "type": "boolean"
+     }
+    }
+   },
+   "ExtQuarter": {
+    "type": "object",
+    "properties": {
+     "period_end": {
+      "type": "string",
+      "format": "date"
+     },
+     "period_start": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "date"
+     },
+     "gross_profit": {
+      "$ref": "#/components/schemas/ExtValue"
+     },
+     "operating_income": {
+      "$ref": "#/components/schemas/ExtValue"
+     },
+     "operating_cash_flow": {
+      "$ref": "#/components/schemas/ExtValue"
+     },
+     "capex": {
+      "$ref": "#/components/schemas/ExtValue"
+     },
+     "free_cash_flow": {
+      "$ref": "#/components/schemas/ExtValue"
+     },
+     "cash": {
+      "$ref": "#/components/schemas/ExtValue"
+     },
+     "total_assets": {
+      "$ref": "#/components/schemas/ExtValue"
+     },
+     "total_liabilities": {
+      "$ref": "#/components/schemas/ExtValue"
+     },
+     "long_term_debt": {
+      "$ref": "#/components/schemas/ExtValue"
+     },
+     "stockholders_equity": {
+      "$ref": "#/components/schemas/ExtValue"
+     },
+     "diluted_shares": {
+      "$ref": "#/components/schemas/ExtValue"
+     }
+    }
+   }
+  }
+ }
+}

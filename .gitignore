@@ -1,0 +1,19 @@
+# Downloaded data (the study saves the sample zip here; fetch it again rather than committing it)
+studies/data/
+*.zip
+
+# Keys and local settings
+.env
+.env.*
+
+# Python / Node
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
