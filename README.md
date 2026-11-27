@@ -177,6 +177,8 @@ account's own email, and only after you say yes). Every answer carries the quote
 
 - **Results CSV**: https://yieldterminalpro.com/data/earnings-results.csv, one row per published results filing,
   the same rows the accuracy counts come from. Details and column list: https://yieldterminalpro.com/dataset.
+  A dated snapshot (2026-11-27, 17,123 rows) is also on Kaggle, with a data card:
+  https://www.kaggle.com/datasets/yieldterminalpro/sec-quarterly-earnings-results-source-linked
 - **Archive sample**: https://yieldterminalpro.com/data/yieldterminal-archive-sample.zip, AAPL, MSFT and NVDA
   only, with the same files, columns and README as the paid archive (results, outlook changes, scorecard, company
   quarterly history and 11 more XBRL fields per quarter, up to 20 quarters per company, each value as first
