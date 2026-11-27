@@ -17,3 +17,6 @@ node_modules/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Notebook download cache (the frozen data is in notebooks/data/)
+notebooks/.cache/

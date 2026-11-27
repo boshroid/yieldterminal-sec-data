@@ -1,0 +1,500 @@
+{
+ "sample": true,
+ "sample_note": "Sample response, no key needed. The paid API returns the same fields for any ticker with a company page and any published filing day: https://yieldterminalpro.com/developers",
+ "endpoint": "company",
+ "ticker": "NVDA",
+ "company": "NVIDIA CORP",
+ "cik": 1045810,
+ "as_of": "2026-08-26",
+ "latest_filed": "2026-11-17",
+ "results": [
+  {
+   "form": "8-K",
+   "filed": "2026-11-17",
+   "quarter_ended": "labeled 2027 in the release",
+   "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000088/q3fy27pr.htm",
+   "accession": "0001045810-26-000088",
+   "revenue_text": "$115.80 billion (+103% vs $57.00 billion a year earlier)",
+   "revenue_value": 115800000000,
+   "revenue_currency": "USD",
+   "revenue_label": "Revenue",
+   "revenue_proof": [
+    "Document NVIDIA Announces Financial Results for Third Quarter Fiscal 2027 •Revenue of $115.8 billion, up 103% from a year ago •Data Center"
+   ],
+   "revenue_matches_10q": false,
+   "revenue_year_ago_matches_sec": true,
+   "eps_text": "$2.70 (vs $1.30 a year earlier)",
+   "eps_value": 2.7,
+   "eps_currency": "USD",
+   "eps_label": "Diluted earnings per share",
+   "eps_proof": [
+    "margins were 74.8% and 74.9%, respectively. GAAP and non-GAAP earnings per diluted share were $2.70 and $2.68, respectively. “Our momentum is real."
+   ],
+   "eps_matches_10q": false
+  },
+  {
+   "form": "8-K",
+   "filed": "2026-08-26",
+   "quarter_ended": "labeled 2027 in the release",
+   "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000073/q2fy27pr.htm",
+   "accession": "0001045810-26-000073",
+   "revenue_text": "$96.22 billion (+106% vs $46.74 billion a year earlier)",
+   "revenue_value": 96221000000,
+   "revenue_currency": "USD",
+   "revenue_label": "Revenue",
+   "revenue_proof": [
+    "Document NVIDIA Announces Financial Results for Second Quarter Fiscal 2027 •Revenue of $96.2 billion, up 106% from a year ago •Data Center"
+   ],
+   "revenue_matches_10q": true,
+   "revenue_year_ago_matches_sec": true,
+   "net_income_text": "$59.69 billion (+125.9% vs $26.42 billion a year earlier)",
+   "net_income_value": 59688000000,
+   "net_income_currency": "USD",
+   "net_income_label": "Net income",
+   "net_income_proof": [],
+   "net_income_matches_10q": true,
+   "net_income_year_ago_matches_sec": true,
+   "eps_text": "$2.46 (vs $1.08 a year earlier)",
+   "eps_value": 2.46,
+   "eps_currency": "USD",
+   "eps_label": "Diluted earnings per share",
+   "eps_proof": [
+    "GAAP and non-GAAP gross margins were both 75.0%. GAAP and non-GAAP earnings per diluted share were $2.46 and $2.22, respectively. “AI has reached its"
+   ],
+   "eps_matches_10q": true
+  },
+  {
+   "form": "8-K",
+   "filed": "2026-05-20",
+   "quarter_ended": "labeled 2027 in the release",
+   "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/q1fy27pr.htm",
+   "accession": "0001045810-26-000051",
+   "revenue_text": "$81.62 billion (+85% vs $44.06 billion a year earlier)",
+   "revenue_value": 81615000000,
+   "revenue_currency": "USD",
+   "revenue_label": "Revenue",
+   "revenue_proof": [
+    "NVIDIA Announces Financial Results for First Quarter Fiscal 2027 •Record revenue of $81.6 billion, up 85% from a year ago •Record Data"
+   ],
+   "revenue_matches_10q": true,
+   "revenue_year_ago_matches_sec": true,
+   "net_income_text": "$58.32 billion (+210.6% vs $18.78 billion a year earlier)",
+   "net_income_value": 58321000000,
+   "net_income_currency": "USD",
+   "net_income_label": "Net income",
+   "net_income_proof": [],
+   "net_income_matches_10q": true,
+   "net_income_year_ago_matches_sec": true,
+   "eps_text": "$2.39 (vs $0.76 a year earlier)",
+   "eps_value": 2.39,
+   "eps_currency": "USD",
+   "eps_label": "Diluted earnings per share",
+   "eps_proof": [
+    "74.9% and 75.0%, respectively. For the quarter, GAAP and non-GAAP earnings per diluted share were $2.39 and $1.87, respectively. “The buildout of AI"
+   ],
+   "eps_matches_10q": true
+  },
+  {
+   "form": "8-K",
+   "filed": "2026-02-25",
+   "quarter_ended": "labeled 2026 in the release",
+   "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000019/q4fy26pr.htm",
+   "accession": "0001045810-26-000019",
+   "revenue_text": "$68.13 billion (+73% vs $39.33 billion a year earlier)",
+   "revenue_value": 68127000000,
+   "revenue_currency": "USD",
+   "revenue_label": "Revenue",
+   "revenue_proof": [
+    "Financial Results for Fourth Quarter and Fiscal 2026 •Record quarterly revenue of $68.1 billion, up 20% from Q3 and up 73% from a year"
+   ],
+   "revenue_matches_10q": false,
+   "revenue_year_ago_matches_sec": true,
+   "eps_text": "$1.76 (vs $0.89 a year earlier)",
+   "eps_value": 1.76,
+   "eps_currency": "USD",
+   "eps_label": "Diluted earnings per share",
+   "eps_proof": [
+    "71.1% and 71.3%, respectively. For the quarter, GAAP and non-GAAP earnings per diluted share were $1.76 and $1.62, respectively. For fiscal 2026, GAAP"
+   ],
+   "eps_matches_10q": false
+  },
+  {
+   "form": "8-K",
+   "filed": "2025-11-19",
+   "quarter_ended": "labeled 2026 in the release",
+   "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581025000228/q3fy26pr.htm",
+   "accession": "0001045810-25-000228",
+   "revenue_text": "$57.01 billion (+62% vs $35.08 billion a year earlier)",
+   "revenue_value": 57006000000,
+   "revenue_currency": "USD",
+   "revenue_label": "Revenue",
+   "revenue_proof": [
+    "NVIDIA Announces Financial Results for Third Quarter Fiscal 2026 •Record revenue of $57.0 billion, up 22% from Q2 and up 62% from a year"
+   ],
+   "revenue_matches_10q": true,
+   "revenue_year_ago_matches_sec": true,
+   "net_income_text": "$31.91 billion (+65.3% vs $19.31 billion a year earlier)",
+   "net_income_value": 31910000000,
+   "net_income_currency": "USD",
+   "net_income_label": "Net income",
+   "net_income_proof": [],
+   "net_income_matches_10q": true,
+   "net_income_year_ago_matches_sec": true,
+   "eps_text": "$1.30 (vs $0.78 a year earlier)",
+   "eps_value": 1.3,
+   "eps_currency": "USD",
+   "eps_label": "Diluted earnings per share",
+   "eps_proof": [],
+   "eps_matches_10q": true
+  }
+ ],
+ "quarterly_history": [
+  {
+   "period_end": "2021-10-31",
+   "fiscal_year": 2022,
+   "fiscal_period": "Q3",
+   "revenue": {
+    "v": 7103000000,
+    "u": "USD",
+    "a": "0001045810-21-000163"
+   },
+   "net_income": {
+    "v": 2464000000,
+    "u": "USD",
+    "a": "0001045810-21-000163"
+   }
+  },
+  {
+   "period_end": "2022-01-30",
+   "fiscal_year": 2022,
+   "fiscal_period": "Q4",
+   "revenue": {
+    "v": 7643000000,
+    "u": "USD",
+    "a": "0001045810-22-000036",
+    "d": 1
+   },
+   "net_income": {
+    "v": 3002000000,
+    "u": "USD",
+    "a": "0001045810-22-000036",
+    "d": 1
+   }
+  },
+  {
+   "period_end": "2022-05-01",
+   "fiscal_year": 2023,
+   "fiscal_period": "Q1",
+   "revenue": {
+    "v": 8288000000,
+    "u": "USD",
+    "a": "0001045810-22-000079"
+   },
+   "net_income": {
+    "v": 1618000000,
+    "u": "USD",
+    "a": "0001045810-22-000079"
+   }
+  },
+  {
+   "period_end": "2022-07-31",
+   "fiscal_year": 2023,
+   "fiscal_period": "Q2",
+   "revenue": {
+    "v": 6704000000,
+    "u": "USD",
+    "a": "0001045810-22-000147"
+   },
+   "net_income": {
+    "v": 656000000,
+    "u": "USD",
+    "a": "0001045810-22-000147"
+   }
+  },
+  {
+   "period_end": "2022-10-30",
+   "fiscal_year": 2023,
+   "fiscal_period": "Q3",
+   "revenue": {
+    "v": 5931000000,
+    "u": "USD",
+    "a": "0001045810-22-000166"
+   },
+   "net_income": {
+    "v": 680000000,
+    "u": "USD",
+    "a": "0001045810-22-000166"
+   }
+  },
+  {
+   "period_end": "2023-01-29",
+   "fiscal_year": 2023,
+   "fiscal_period": "Q4",
+   "revenue": {
+    "v": 6051000000,
+    "u": "USD",
+    "a": "0001045810-23-000017",
+    "d": 1
+   },
+   "net_income": {
+    "v": 1414000000,
+    "u": "USD",
+    "a": "0001045810-23-000017",
+    "d": 1
+   }
+  },
+  {
+   "period_end": "2023-04-30",
+   "fiscal_year": 2024,
+   "fiscal_period": "Q1",
+   "revenue": {
+    "v": 7192000000,
+    "u": "USD",
+    "a": "0001045810-23-000093"
+   },
+   "net_income": {
+    "v": 2043000000,
+    "u": "USD",
+    "a": "0001045810-23-000093"
+   }
+  },
+  {
+   "period_end": "2023-07-30",
+   "fiscal_year": 2024,
+   "fiscal_period": "Q2",
+   "revenue": {
+    "v": 13507000000,
+    "u": "USD",
+    "a": "0001045810-23-000175"
+   },
+   "net_income": {
+    "v": 6188000000,
+    "u": "USD",
+    "a": "0001045810-23-000175"
+   }
+  },
+  {
+   "period_end": "2023-10-29",
+   "fiscal_year": 2024,
+   "fiscal_period": "Q3",
+   "revenue": {
+    "v": 18120000000,
+    "u": "USD",
+    "a": "0001045810-23-000227"
+   },
+   "net_income": {
+    "v": 9243000000,
+    "u": "USD",
+    "a": "0001045810-23-000227"
+   }
+  },
+  {
+   "period_end": "2024-01-28",
+   "fiscal_year": 2024,
+   "fiscal_period": "Q4",
+   "revenue": {
+    "v": 22103000000,
+    "u": "USD",
+    "a": "0001045810-24-000029",
+    "d": 1
+   },
+   "net_income": {
+    "v": 12286000000,
+    "u": "USD",
+    "a": "0001045810-24-000029",
+    "d": 1
+   }
+  },
+  {
+   "period_end": "2024-04-28",
+   "fiscal_year": 2025,
+   "fiscal_period": "Q1",
+   "revenue": {
+    "v": 26044000000,
+    "u": "USD",
+    "a": "0001045810-24-000124"
+   },
+   "net_income": {
+    "v": 14881000000,
+    "u": "USD",
+    "a": "0001045810-24-000124"
+   }
+  },
+  {
+   "period_end": "2024-07-28",
+   "fiscal_year": 2025,
+   "fiscal_period": "Q2",
+   "revenue": {
+    "v": 30040000000,
+    "u": "USD",
+    "a": "0001045810-24-000264"
+   },
+   "net_income": {
+    "v": 16599000000,
+    "u": "USD",
+    "a": "0001045810-24-000264"
+   },
+   "eps": {
+    "v": 0.67,
+    "u": "USD/shares",
+    "a": "0001045810-24-000264"
+   }
+  },
+  {
+   "period_end": "2024-10-27",
+   "fiscal_year": 2025,
+   "fiscal_period": "Q3",
+   "revenue": {
+    "v": 35082000000,
+    "u": "USD",
+    "a": "0001045810-24-000316"
+   },
+   "net_income": {
+    "v": 19309000000,
+    "u": "USD",
+    "a": "0001045810-24-000316"
+   },
+   "eps": {
+    "v": 0.78,
+    "u": "USD/shares",
+    "a": "0001045810-24-000316"
+   }
+  },
+  {
+   "period_end": "2025-01-26",
+   "fiscal_year": 2025,
+   "fiscal_period": "Q4",
+   "revenue": {
+    "v": 39331000000,
+    "u": "USD",
+    "a": "0001045810-25-000023",
+    "d": 1
+   },
+   "net_income": {
+    "v": 22091000000,
+    "u": "USD",
+    "a": "0001045810-25-000023",
+    "d": 1
+   }
+  },
+  {
+   "period_end": "2025-04-27",
+   "fiscal_year": 2026,
+   "fiscal_period": "Q1",
+   "revenue": {
+    "v": 44062000000,
+    "u": "USD",
+    "a": "0001045810-25-000116"
+   },
+   "net_income": {
+    "v": 18775000000,
+    "u": "USD",
+    "a": "0001045810-25-000116"
+   },
+   "eps": {
+    "v": 0.76,
+    "u": "USD/shares",
+    "a": "0001045810-25-000116"
+   }
+  },
+  {
+   "period_end": "2025-07-27",
+   "fiscal_year": 2026,
+   "fiscal_period": "Q2",
+   "revenue": {
+    "v": 46743000000,
+    "u": "USD",
+    "a": "0001045810-25-000209"
+   },
+   "net_income": {
+    "v": 26422000000,
+    "u": "USD",
+    "a": "0001045810-25-000209"
+   },
+   "eps": {
+    "v": 1.08,
+    "u": "USD/shares",
+    "a": "0001045810-25-000209"
+   }
+  },
+  {
+   "period_end": "2025-10-26",
+   "fiscal_year": 2026,
+   "fiscal_period": "Q3",
+   "revenue": {
+    "v": 57006000000,
+    "u": "USD",
+    "a": "0001045810-25-000230"
+   },
+   "net_income": {
+    "v": 31910000000,
+    "u": "USD",
+    "a": "0001045810-25-000230"
+   },
+   "eps": {
+    "v": 1.3,
+    "u": "USD/shares",
+    "a": "0001045810-25-000230"
+   }
+  },
+  {
+   "period_end": "2026-01-25",
+   "fiscal_year": 2026,
+   "fiscal_period": "Q4",
+   "revenue": {
+    "v": 68127000000,
+    "u": "USD",
+    "a": "0001045810-26-000021",
+    "d": 1
+   },
+   "net_income": {
+    "v": 42960000000,
+    "u": "USD",
+    "a": "0001045810-26-000021",
+    "d": 1
+   }
+  },
+  {
+   "period_end": "2026-04-26",
+   "fiscal_year": 2027,
+   "fiscal_period": "Q1",
+   "revenue": {
+    "v": 81615000000,
+    "u": "USD",
+    "a": "0001045810-26-000052"
+   },
+   "net_income": {
+    "v": 58321000000,
+    "u": "USD",
+    "a": "0001045810-26-000052"
+   },
+   "eps": {
+    "v": 2.39,
+    "u": "USD/shares",
+    "a": "0001045810-26-000052"
+   }
+  },
+  {
+   "period_end": "2026-07-26",
+   "fiscal_year": 2027,
+   "fiscal_period": "Q2",
+   "revenue": {
+    "v": 96221000000,
+    "u": "USD",
+    "a": "0001045810-26-000075"
+   },
+   "net_income": {
+    "v": 59688000000,
+    "u": "USD",
+    "a": "0001045810-26-000075"
+   },
+   "eps": {
+    "v": 2.46,
+    "u": "USD/shares",
+    "a": "0001045810-26-000075"
+   }
+  }
+ ],
+ "history_note": "XBRL concepts used. Revenue: Revenues; Net income: NetIncomeLoss; Diluted EPS: EarningsPerShareDiluted. Diluted EPS first reported before a share split is not shown (8 quarters).",
+ "note": "Figures as read by YieldTerminal Pro from each SEC results filing; a missing figure was withheld because it could not be confirmed. Educational data, not investment advice. Attribute to YieldTerminal Pro (yieldterminalpro.com)."
+}

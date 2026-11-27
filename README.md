@@ -200,6 +200,23 @@ income or EPS figure was restated; the only 3 flagged rows are NVDA share counts
 release figures with a matching XBRL figure equal it. The sample is too small to say anything about the full
 archive. Full output in [`studies/README.md`](studies/README.md).
 
+## Notebook: point-in-time earnings backtest
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/boshroid/yieldterminal-sec-data/blob/main/notebooks/point-in-time-earnings-backtest.ipynb)
+
+[`notebooks/point-in-time-earnings-backtest.ipynb`](notebooks/point-in-time-earnings-backtest.ipynb) shows on real
+data how restated fundamentals leak future information into an earnings backtest, and how figures "as first
+reported", keyed to their filing date, fix it. For 30 large U.S. companies it pulls single-quarter revenue and net
+income from the free `data.sec.gov` companyconcept JSON, compares each quarter's first-reported value with the
+latest one, ranks the companies each quarter on year-over-year revenue growth both ways, and ends with the
+`yieldterminal` client (first-reported history with filing links, and a withheld figure).
+
+In the snapshot retrieved on 2026-11-27: 132 of 2,153 company-quarter values (6.1%) changed after they were first
+reported, at 15 of the 30 companies; the revenue-growth ranking differed in 28 of 42 quarters. There are no returns
+and no strategy in it, only the inputs. The pulled data and the results are frozen as CSV in
+[`notebooks/data/`](notebooks/data), so it runs top to bottom without network access; set `PIT_REFRESH=1` to pull
+everything again.
+
 ## Pricing
 
 Free key $0 (100 calls a day, personal non-commercial use: results and outlook rows from the last 30 days, full
