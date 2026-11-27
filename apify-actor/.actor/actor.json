@@ -1,0 +1,11 @@
+{
+  "actorSpecification": 1,
+  "name": "yieldterminal-earnings-results",
+  "title": "YieldTerminal Earnings Results",
+  "description": "Quarterly revenue, net income and diluted EPS read from each company's own results filing, with the SEC filing link on every figure. History as first reported, outlook changes, 8-K events and more. Free: bring your own YieldTerminal key.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "readme": "../README.md",
+  "dockerfile": "../Dockerfile"
+}

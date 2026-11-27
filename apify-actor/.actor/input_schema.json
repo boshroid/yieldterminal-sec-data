@@ -1,0 +1,135 @@
+{
+  "title": "YieldTerminal Earnings Results input",
+  "description": "Pick a data set and the tickers or dates you want. Every result row carries the link to the SEC filing it was read from. Without an API key, only the live samples and the status check run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "endpoint": {
+      "title": "Data set",
+      "type": "string",
+      "description": "Which YieldTerminal Pro data set to fetch. The three samples and the status check need no key.",
+      "editor": "select",
+      "enum": [
+        "company",
+        "results",
+        "outlook",
+        "capex",
+        "scorecard",
+        "levels",
+        "13f",
+        "capital",
+        "risk",
+        "events",
+        "updates",
+        "archive",
+        "sample-company",
+        "sample-results",
+        "sample-outlook",
+        "status"
+      ],
+      "enumTitles": [
+        "Company: results releases + up to 20 quarters as first reported (one call per ticker)",
+        "Results: every result filed on a day",
+        "Outlook changes: by day or by ticker",
+        "AI spenders capex board",
+        "Outlook scorecard: one season",
+        "Dated chart levels: by ticker or day",
+        "13F holders: by ticker",
+        "Capital returns and dilution: by ticker",
+        "10-K risk-factor changes: by ticker",
+        "8-K officer and debt events: by ticker, day or range",
+        "Updates since a time (Pro key)",
+        "Archive: every published result (Pro key)",
+        "Sample, no key: one company (NVDA, WMT, TJX, HD or TGT)",
+        "Sample, no key: first 3 results of the latest filing day",
+        "Sample, no key: first 3 outlook rows of the latest outlook day",
+        "Status, no key: data freshness"
+      ],
+      "default": "sample-company",
+      "prefill": "sample-company"
+    },
+    "tickers": {
+      "title": "Tickers",
+      "type": "array",
+      "description": "Ticker symbols such as AAPL or BRK.B. Company, 13F, levels, outlook and capex make one API call per ticker. Capital, risk and events send up to 25 tickers in one call. For the company sample, only the first ticker is used and it must be NVDA, WMT, TJX, HD or TGT.",
+      "editor": "stringList",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z]{1,5}([.-][A-Za-z]{1,2})?$"
+      },
+      "prefill": ["NVDA"]
+    },
+    "date": {
+      "title": "Filing day",
+      "type": "string",
+      "description": "Results, outlook, levels or events: the filing (or board) day. Leave empty for the latest day.",
+      "editor": "datepicker",
+      "dateType": "absolute"
+    },
+    "dateFrom": {
+      "title": "From (events only)",
+      "type": "string",
+      "description": "Events: first filing day of a range, with To. At most 23 business days.",
+      "editor": "datepicker",
+      "dateType": "absolute",
+      "sectionCaption": "Ranges, seasons and paging"
+    },
+    "dateTo": {
+      "title": "To (events only)",
+      "type": "string",
+      "description": "Events: last filing day of a range, with From.",
+      "editor": "datepicker",
+      "dateType": "absolute"
+    },
+    "item": {
+      "title": "8-K item (events only)",
+      "type": "string",
+      "description": "Only this Form 8-K item. Leave empty for all three.",
+      "editor": "select",
+      "enum": ["5.02", "2.03", "2.04"],
+      "enumTitles": [
+        "5.02 Officer or director changes",
+        "2.03 New debt obligation",
+        "2.04 Accelerated obligation"
+      ]
+    },
+    "season": {
+      "title": "Scorecard season",
+      "type": "string",
+      "description": "Scorecard: a season such as 2026-fall. Leave empty for the latest season.",
+      "editor": "textfield",
+      "pattern": "^\\d{4}-(spring|summer|fall|winter)$"
+    },
+    "since": {
+      "title": "Since",
+      "type": "string",
+      "description": "Updates: an ISO UTC time such as 2026-11-20T00:00:00Z (required for updates). Capital and risk: a day (YYYY-MM-DD) to list companies with a newer filing.",
+      "editor": "textfield"
+    },
+    "maxPages": {
+      "title": "Max pages (updates, archive, since)",
+      "type": "integer",
+      "description": "Stop after this many paged calls. Each call is one call against the daily limit; archive returns up to 1,000 results per call.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 5
+    },
+    "flatten": {
+      "title": "One row per result",
+      "type": "boolean",
+      "description": "Push each result, outlook row, history quarter or event as its own dataset item. Turn off to push each API response whole.",
+      "editor": "checkbox",
+      "default": true
+    },
+    "apiKey": {
+      "title": "Your YieldTerminal Pro API key",
+      "type": "string",
+      "description": "Optional. ytp_ followed by 48 hex characters. Get a free key (100 calls a day, personal non-commercial use) at https://yieldterminalpro.com/developers. Stored encrypted and sent only in the x-api-key header.",
+      "editor": "textfield",
+      "isSecret": true,
+      "sectionCaption": "API key"
+    }
+  },
+  "required": ["endpoint"]
+}

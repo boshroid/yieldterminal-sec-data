@@ -1,0 +1,20 @@
+{
+  "name": "yieldterminal-earnings-results",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Apify Actor: YieldTerminal Pro Earnings Data API rows into an Apify dataset (bring your own key)",
+  "type": "module",
+  "main": "main.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node main.js"
+  },
+  "dependencies": {
+    "apify": "^3.8.0",
+    "yieldterminal": "^0.1.0"
+  },
+  "author": "YieldTerminal Pro <yieldterminalpro@gmail.com>",
+  "license": "MIT"
+}
