@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yieldterminal"
+version = "0.1.0"
+description = "Client for the YieldTerminal Pro Earnings Data API: quarterly results read from company filings, each with its filing link"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "YieldTerminal Pro", email = "yieldterminalpro@gmail.com" }]
+keywords = ["earnings", "financial data", "fundamentals", "10-Q", "8-K", "xbrl", "point-in-time", "api client"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+pandas = ["pandas>=1.3"]
+
+[project.urls]
+Homepage = "https://yieldterminalpro.com/developers"
+Documentation = "https://yieldterminalpro.com/developers"
+"API reference (OpenAPI)" = "https://yieldterminalpro.com/openapi.json"
+Accuracy = "https://yieldterminalpro.com/accuracy"
+Source = "https://github.com/boshroid/yieldterminal-sec-data"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+yieldterminal = ["py.typed"]

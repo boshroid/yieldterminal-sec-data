@@ -1,0 +1,48 @@
+{
+  "name": "yieldterminal",
+  "version": "0.1.0",
+  "description": "Client for the YieldTerminal Pro Earnings Data API: quarterly results read from company filings, each with its filing link",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/live.test.js"
+  },
+  "keywords": [
+    "earnings",
+    "financial-data",
+    "fundamentals",
+    "10-q",
+    "8-k",
+    "xbrl",
+    "point-in-time",
+    "api-client"
+  ],
+  "author": "YieldTerminal Pro <yieldterminalpro@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://yieldterminalpro.com/developers",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boshroid/yieldterminal-sec-data.git"
+  },
+  "bugs": {
+    "email": "yieldterminalpro@gmail.com"
+  }
+}

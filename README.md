@@ -10,6 +10,14 @@ spec and a small reproducible study on the free archive sample.
 
 Educational data, not investment advice.
 
+## Client libraries
+
+- Python: `clients/python` (package `yieldterminal`), `pip install yieldterminal` once it is on PyPI.
+- JavaScript / TypeScript: `clients/node` (package `yieldterminal`), zero dependencies.
+
+Both are MIT licensed (see each folder's `LICENSE`). The MIT licence covers the code in this repository, not the
+data the API returns; data use is governed by https://yieldterminalpro.com/terms .
+
 ## What the data is
 
 - **Source.** For each company results filing on SEC EDGAR (Form 8-K Item 2.02 for a U.S. filer, Form 6-K for a
