@@ -1,0 +1,27 @@
+{
+  "actorSpecification": 1,
+  "fields": {},
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": ["kind", "ticker", "company", "form", "filed", "period_end", "revenue_text", "net_income_text", "eps_text", "source_url"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "kind": { "label": "Kind" },
+          "ticker": { "label": "Ticker" },
+          "company": { "label": "Company" },
+          "form": { "label": "Form" },
+          "filed": { "label": "Filed" },
+          "period_end": { "label": "Period end" },
+          "revenue_text": { "label": "Revenue" },
+          "net_income_text": { "label": "Net income" },
+          "eps_text": { "label": "Diluted EPS" },
+          "source_url": { "label": "SEC filing", "format": "link" }
+        }
+      }
+    }
+  }
+}

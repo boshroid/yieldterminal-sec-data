@@ -1,0 +1,16 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "YieldTerminal Earnings Results output",
+  "properties": {
+    "results": {
+      "type": "string",
+      "title": "Rows (results, history, outlook, events...)",
+      "template": "{{links.apiDefaultDatasetUrl}}/items"
+    },
+    "attribution": {
+      "type": "string",
+      "title": "Attribution note",
+      "template": "{{links.apiDefaultKeyValueStoreUrl}}/records/ATTRIBUTION"
+    }
+  }
+}
